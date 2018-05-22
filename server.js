@@ -14,24 +14,46 @@ app.use(cors());
 
 
 app.get('/', (req, res) => {
-    res.send('This is working');
+    User.find({}, (err, doc) => {
+        if(err){
+            res.status(404).send('Unable to retrieve users..Please try again');
+        }else if(doc){
+            res.send(doc);
+        }
+    })
 });
 
 app.post('/signin', (req, res) =>{
-    res.json('sending');
+    const {email, password} = req.body;
+
+    //    var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
+    User.findOne({email : email}, (err, doc) => { 
+        if(err){
+            res.status(400).send('Unable to signin...Please try again later');
+        }else if(doc){
+            
+            const dbpassword = doc.password;
+            console.log(dbpassword);
+            var match = bcrypt.compareSync(password, dbpassword); // true
+            if(match){
+                res.send(doc);
+            }else{
+                res.status(403).send('Wrong password. Please input correct password');
+            }
+            res.end();
+        }
+
+    }
+);
 });
 
 
 app.post('/register', (req, res) => {
-    const {name, email, password } = req.body;
-
-    // var hash = bcrypt.hashSync(email);
-    // console.log(hash);
-   var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
-   var second = bcrypt.compareSync("ekunolaeasybuo@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // false
-    console.log(first);
-    console.log(second);
-
+    const {name, email } = req.body;
+    let {password} = req.body;
+    password = bcrypt.hashSync(password);;
+//    var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
+//    var second = bcrypt.compareSync("ekunolaeasybuo@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // false
 
     User.findOne({email : email}, (err, doc) => {
         if(doc){
