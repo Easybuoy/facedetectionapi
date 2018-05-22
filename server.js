@@ -14,6 +14,10 @@ app.use(cors());
 
 
 app.get('/', (req, res) => {
+    res.send('Hi, welcome to WebService');
+});
+
+app.get('/users', (req, res) => {
     User.find({}, (err, doc) => {
         if(err){
             res.status(404).send('Unable to retrieve users..Please try again');
@@ -25,22 +29,21 @@ app.get('/', (req, res) => {
 
 app.post('/signin', (req, res) =>{
     const {email, password} = req.body;
-
     //    var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
-    User.findOne({email : email}, (err, doc) => { 
+    User.findOne({email : email}).lean().exec((err, doc) => { 
         if(err){
             res.status(400).send('Unable to signin...Please try again later');
         }else if(doc){
-            
             const dbpassword = doc.password;
-            console.log(dbpassword);
             var match = bcrypt.compareSync(password, dbpassword); // true
             if(match){
+                delete doc.password;
                 res.send(doc);
             }else{
                 res.status(403).send('Wrong password. Please input correct password');
             }
-            res.end();
+        }else{
+            res.status(404).send('Unable to find User.. Please Try Again');
         }
 
     }
@@ -51,11 +54,9 @@ app.post('/signin', (req, res) =>{
 app.post('/register', (req, res) => {
     const {name, email } = req.body;
     let {password} = req.body;
-    password = bcrypt.hashSync(password);;
-//    var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
-//    var second = bcrypt.compareSync("ekunolaeasybuo@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // false
+    password = bcrypt.hashSync(password);
 
-    User.findOne({email : email}, (err, doc) => {
+    User.findOne({email : email}).lean().exec((err, doc) => {
         if(doc){
             res.status(400).send(`User already registered with email ${email}`);
         }else{
@@ -67,7 +68,10 @@ app.post('/register', (req, res) => {
                 date_joined: new Date()
             }
             new User(NewUser).save()
-            .then(user => res.send(user))
+            .then((user) =>{
+                delete user.password;
+                res.send(user);
+            })
             .catch(err => res.status(502).send("Unable To Register. Please Try Again"));
         }
     });
