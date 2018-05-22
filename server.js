@@ -90,10 +90,36 @@ app.post('/register', (req, res) => {
 app.get('/profile/:id', (req, res) => {
     const { id } = req.params;
     //if found res
-    // res.json(user)
-    //else
-    // res.status(404).json('No user found');
+    User.findOne({_id: id}).lean().exec((err, doc) => {
+        if(err){
+            res.status(404).send('Unable to retrieve profile...Please try again');
+        }else if(doc){
+            delete doc.password;
+            res.send(doc);
+        }else{
+            res.status(400).send('Profile not found');
+        }
+    });
 });
+
+app.post('/image', (req, res) => {
+    const { id } = req.body;
+    User.findOne({_id: id}).lean().exec((err, doc) => {
+        if(err){
+            res.status(404).send('Unable to retrieve profile...Please try again');
+        }else if(doc){
+            doc.entries++;
+           let newentries = doc.entries;
+           console.log(newentries);
+            User.update({ _id: id }, { $set: { entries: newentries}}, (err, res) => {
+                res.send(`${newentries}`);
+            });
+        }else{
+            res.status(400).send('Profile not found');
+        }
+    });
+});
+
 
 app.listen(port, () => {
     console.log(`app is running on port ${port}`);
