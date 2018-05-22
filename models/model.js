@@ -24,8 +24,26 @@ const userSchema = new Schema({
     }
 });
 
+const sendGrid = new Schema ({
+    request: {
+    type: String,
+    required: true
+    },
+    request_time: {
+        type: Date,
+        required: true
+    },
+    response: {
+        type: String,
+        required: true
+    },
+    response_time: {
+        type: Date,
+        required: true
+    }
+});
 
 //create collection and add schema
 const User = mongoose.model('user', userSchema);
-
-module.exports = User;
+const MailLog = mongoose.model('maillog', sendGrid);
+module.exports = {User, MailLog};
