@@ -16,36 +16,44 @@ app.use(cors());
 // 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
 
 app.get('/', (req, res) => {
-    res.send('Hi, welcome to WebService');
+    res.json('Hi, welcome to WebService');
 });
 
 app.get('/users', (req, res) => {
     User.find({}, (err, doc) => {
         if(err){
-            res.status(404).send('Unable to retrieve users..Please try again');
+            res.status(404).json('Unable to retrieve users..Please try again');
         }else if(doc){
-            res.send(doc);
+            res.json(doc);
         }
     })
 });
 
 app.post('/signin', (req, res) =>{
     const {email, password} = req.body;
+    if((!email) && (!password)){
+        res.status(404).json('Missing required parameter(s)').end();
+        return;
+    }
     //    var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
-    User.findOne({email : email}).lean().exec((err, doc) => { 
+    User.findOne({email : email}).lean().exec( (err, doc) => { console.log(err); console.log(doc)
         if(err){
-            res.status(400).send('Unable to signin...Please try again later');
+            res.status(400).json('Unable to signin...Please try again later').end();
+            return;
         }else if(doc){
             const dbpassword = doc.password;
             var match = bcrypt.compareSync(password, dbpassword); // true
             if(match){
                 delete doc.password;
-                res.send(doc);
-            }else{
-                res.status(403).send('Wrong password. Please input correct password');
+                res.json(doc).end();
+                return;
+            }else{ 
+                res.status(403).json('Wrong password. Please input correct password').end();
+                return;
             }
-        }else{
-            res.status(404).send('Unable to find User.. Please Try Again');
+        }else{ 
+            res.status(404).json('Unable to find User.. Please Try Again').end();
+            return;
         }
 
     }
@@ -60,7 +68,7 @@ app.post('/register', (req, res) => {
 
     User.findOne({email : email}).lean().exec((err, doc) => {
         if(doc){
-            res.status(400).send(`User already registered with email ${email}`);
+            res.status(400).json(`User already registered with email ${email}`);
         }else{
             const from_email = 'facetetection@gmail.com';
             const to_email = email;
@@ -78,9 +86,9 @@ app.post('/register', (req, res) => {
 
                 delete user.password;
                 // sendmail(from_email, to_email, subject, content);
-                res.send(user);
+                res.json(user);
             })
-            .catch(err => res.status(502).send("Unable To Register. Please Try Again"));
+            .catch(err => res.status(502).json("Unable To Register. Please Try Again"));
         }
     });
     
@@ -92,30 +100,30 @@ app.get('/profile/:id', (req, res) => {
     //if found res
     User.findOne({_id: id}).lean().exec((err, doc) => {
         if(err){
-            res.status(404).send('Unable to retrieve profile...Please try again');
+            res.status(404).json('Unable to retrieve profile...Please try again');
         }else if(doc){
             delete doc.password;
-            res.send(doc);
+            res.json(doc);
         }else{
-            res.status(400).send('Profile not found');
+            res.status(400).json('Profile not found');
         }
     });
 });
 
-app.post('/image', (req, res) => {
+app.put('/image', (req, res) => {
     const { id } = req.body;
     User.findOne({_id: id}).lean().exec((err, doc) => {
         if(err){
-            res.status(404).send('Unable to retrieve profile...Please try again');
+            res.status(404).json('Unable to retrieve profile...Please try again');
         }else if(doc){
             doc.entries++;
            let newentries = doc.entries;
            console.log(newentries);
             User.update({ _id: id }, { $set: { entries: newentries}}, (err, res) => {
-                res.send(`${newentries}`);
+                res.json(`${newentries}`);
             });
         }else{
-            res.status(400).send('Profile not found');
+            res.status(400).json('Profile not found');
         }
     });
 });
