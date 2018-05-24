@@ -36,8 +36,9 @@ app.post('/signin', (req, res) =>{
         return;
     }
     //    var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
-    User.findOne({email : email}).lean().exec( (err, doc) => { console.log(err); console.log(doc)
+    User.findOne({email : email}).lean().exec( (err, doc) => { 
         if(err){
+            console.log(err);
             res.status(400).json('Unable to signin...Please try again later').end();
             return;
         }else if(doc){
@@ -88,7 +89,7 @@ app.post('/register', (req, res) => {
                 // sendmail(from_email, to_email, subject, content);
                 res.json(user);
             })
-            .catch(err => res.status(502).json("Unable To Register. Please Try Again"));
+            .catch(err => res.status(502).json("Unable To Register User. Please Try Again"));
         }
     });
     
@@ -115,14 +116,17 @@ app.put('/image', (req, res) => {
     User.findOne({_id: id}).lean().exec((err, doc) => {
         if(err){
             res.status(404).json('Unable to retrieve profile...Please try again');
+            return;
         }else if(doc){
             doc.entries++;
            let newentries = doc.entries;
-           console.log(newentries);
-            User.update({ _id: id }, { $set: { entries: newentries}}, (err, res) => {
+           
+            User.update({ _id: id }, { $set: { entries: newentries}}, (err, response) => {
                 res.json(`${newentries}`);
+                return;
             });
         }else{
+            return;
             res.status(400).json('Profile not found');
         }
     });
