@@ -9,11 +9,10 @@ const {User} = require('./models/model');
 const {MailLog} = require('./models/model');
 const port = process.env.PORT || 3001;
 const app = express();
-// WihudyicnufHay8
+
 app.use(bodyParser.json());
 app.use(cors());
 
-// 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
 
 app.get('/', (req, res) => {
     res.json('Hi, welcome to WebService');
@@ -35,7 +34,6 @@ app.post('/signin', (req, res) =>{
         res.status(404).json('Missing required parameter(s)').end();
         return;
     }
-    //    var first = bcrypt.compareSync("ekunolaeasybuoy@gmail.com", '$2a$10$Fjv.oRH7Pll6e7g0E0moq.Qzy0aQxfSivaCrmL87VTmuEP2JbHfIG'); // true
     User.findOne({email : email}).lean().exec( (err, doc) => { 
         if(err){
             console.log(err);
@@ -143,9 +141,8 @@ var from_email = new helper.Email(from_email);
 var to_email = new helper.Email(to_email);
 var content = new helper.Content('text/plain', content);
 var mail = new helper.Mail(from_email, subject, to_email, content);
-
 var sg = require('sendgrid')(process.env.SENDGRID_API_KEY);
-// var sg = require('sendgrid')('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');
+
 var request = sg.emptyRequest({
   method: 'POST',
   path: '/v3/mail/send',
